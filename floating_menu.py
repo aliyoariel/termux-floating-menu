@@ -1,41 +1,44 @@
-import gi
-import subprocess  # Untuk eksekusi perintah sistem
+import tkinter as tk
 
-gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk
+class FloatingMenu:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Floating Menu")
+        self.root.geometry("200x150")  
+        self.root.attributes('-topmost', True)  # Tetap di atas aplikasi lain
+        self.root.overrideredirect(True)  # Hilangkan border window
 
-class FloatingMenu(Gtk.Window):
-    def __init__(self):
-        super().__init__(title="Mod Menu Termux")
-        
-        self.set_default_size(220, 160)
-        self.set_decorated(False)
-        self.set_keep_above(True)
-        self.move(100, 100)  # Posisi awal
-        
-        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
-        
-        btn_ls = Gtk.Button(label="📂 List Files")
-        btn_ls.connect("clicked", self.run_ls)
+        # Buat frame utama
+        frame = tk.Frame(root, bg="lightgray", padx=10, pady=10)
+        frame.pack(fill="both", expand=True)
 
-        btn_ping = Gtk.Button(label="🌐 Ping Google")
-        btn_ping.connect("clicked", self.run_ping)
+        # Tambahkan tombol interaktif
+        btn1 = tk.Button(frame, text="🔎 Cek Files", command=self.run_ls)
+        btn2 = tk.Button(frame, text="🌐 Ping Google", command=self.run_ping)
+        btnExit = tk.Button(frame, text="❌ Tutup", command=root.quit)
 
-        btn_exit = Gtk.Button(label="❌ Tutup Menu")
-        btn_exit.connect("clicked", lambda w: Gtk.main_quit())
+        btn1.pack(fill="x", pady=5)
+        btn2.pack(fill="x", pady=5)
+        btnExit.pack(fill="x", pady=5)
 
-        box.pack_start(btn_ls, True, True, 0)
-        box.pack_start(btn_ping, True, True, 0)
-        box.pack_start(btn_exit, True, True, 0)
-        
-        self.add(box)
-        self.show_all()
-    
-    def run_ls(self, widget):
-        subprocess.run(["ls", "-l"], text=True)
-    
-    def run_ping(self, widget):
-        subprocess.run(["ping", "-c", "4", "google.com"], text=True)
+        # Tambahkan fungsi untuk geser jendela
+        frame.bind("<ButtonPress-1>", self.start_move)
+        frame.bind("<B1-Motion>", self.on_move)
 
-win = FloatingMenu()
-Gtk.main()
+    def run_ls(self):
+        print("Menjalankan 'ls' untuk melihat file...")
+
+    def run_ping(self):
+        print("Menjalankan 'ping google.com' untuk cek koneksi...")
+
+    def start_move(self, event):
+        self.x = event.x
+        self.y = event.y
+
+    def on_move(self, event):
+        self.root.geometry(f"+{event.x_root-self.x}+{event.y_root-self.y}")
+
+# Jalankan aplikasi
+root = tk.Tk()
+app = FloatingMenu(root)
+root.mainloop()
